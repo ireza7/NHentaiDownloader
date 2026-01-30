@@ -1,4 +1,3 @@
-var fileSaver = require("file-saver");
 var JSZip = require("jszip");
 
 export default class Downloader
@@ -129,13 +128,26 @@ export default class Downloader
                                     self.updateProgress(elem.percent, elem.currentFile == null ? self.path : elem.currentFile, true);
                                 } catch (e) { } // Dead object
                             })
-                                .then(function (content: any) { // Zipping done
-                                    self.currentProgress = 100;
-                                    fileSaver.saveAs(content, self.downloadName + "." + self.useZip);
-                                    try {
-                                        self.updateProgress(100, null, true); // Notify popup that we are done
-                                    } catch (e) { } // Dead object
-                                })
+                                        .then(function (content: any) { // Zipping done
+                                            self.currentProgress = 100;
+                                            try {
+                                                // Use chrome.downloads to save the blob in a service worker context
+                                                const blob = content;
+                                                const url = URL.createObjectURL(blob);
+                                                chrome.downloads.download({ url: url, filename: self.downloadName + "." + self.useZip }, function (downloadId) {
+                                                    if (downloadId === undefined) {
+                                                        console.error("Failed to download zip", chrome.runtime.lastError);
+                                                    }
+                                                    // Revoke the object URL after a short delay
+                                                    setTimeout(() => URL.revokeObjectURL(url), 10000);
+                                                });
+                                            } catch (e) {
+                                                console.error(e);
+                                            }
+                                            try {
+                                                self.updateProgress(100, null, true); // Notify popup that we are done
+                                            } catch (e) { } // Dead object
+                                        })
                         );
                     });
                 } else {
@@ -195,14 +207,9 @@ export default class Downloader
             if (resp.ok)
             {
                 let blob = await resp.blob();
-                await new Promise((resolve, reject) => {
-                    var reader = new FileReader();
-                    reader.onload = () => {
-                        resolve(this.#zip.file(this.path + '/' + filename, reader.result as null));
-                    };
-                    reader.onerror = reject;
-                    reader.readAsArrayBuffer(blob);
-                });
+                // Use blob.arrayBuffer() instead of FileReader (not available in service worker)
+                const arrayBuffer = await blob.arrayBuffer();
+                await this.#zip.file(this.path + '/' + filename, arrayBuffer as any);
             }
             else
             {

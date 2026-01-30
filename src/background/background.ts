@@ -5,6 +5,17 @@ import Downloader from "./Downloader";
 import { utils } from "../utils/utils";
 var JSZip = require("jszip");
 
+// Service worker global shim: ensure `window` exists in the service worker context
+// so third-party libraries that reference `window` won't throw.
+try {
+    const g: any = (typeof globalThis !== "undefined") ? globalThis : (typeof self !== "undefined" ? self : undefined);
+    if (g) {
+        if (typeof g.window === "undefined") g.window = g;
+        if (typeof g.document === "undefined") g.document = g.document || undefined;
+    }
+} catch (e) {
+    // ignore
+}
 chrome.tabs.onUpdated.addListener(function
     (_tabId, changeInfo, _tab) {
         if (changeInfo.url !== undefined)
@@ -23,9 +34,9 @@ chrome.tabs.onActivated.addListener(function() {
 
 function setIcon(url: string) {
     if (url.startsWith("https://nhentai.net"))
-        chrome.browserAction.setIcon({path: "Icon.png"});
+        chrome.action.setIcon({path: "Icon.png"});
     else
-        chrome.browserAction.setIcon({path: "Icon-grey.png"});
+        chrome.action.setIcon({path: "Icon-grey.png"});
 }
 
 module background

@@ -1,4 +1,5 @@
 {
+  "manifest_version": 3,
   "browser_specific_settings": {
     "gecko": {
       "id": "contact.nhentaidownloader@zirk.eu"
@@ -10,22 +11,25 @@
   "icons": {
     "64": "Icon.png"
   },
-  "browser_action": {
+  "action": {
     "default_popup": "index.html"
   },
   "permissions": [
     "downloads",
     "tabs",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
     "https://nhentai.net/*",
     "https://i1.nhentai.net/*",
     "https://i2.nhentai.net/*",
     "https://i3.nhentai.net/*",
-    "https://i4.nhentai.net/*",
-    "storage"
+    "https://i4.nhentai.net/*"
   ],
   "author": "Xwilarg",
   "background": {
-    "scripts": ["js/background.js"]
+    "service_worker": "js/background.js"
   },
   "options_ui": {
     "page": "options.html",
@@ -37,6 +41,5 @@
     ],
     "css" : ["css/content.css"],
     "js": ["js/content.js"]
-  }],
-  "manifest_version": 2
+  }]
 }

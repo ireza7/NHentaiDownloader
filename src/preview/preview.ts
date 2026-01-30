@@ -5,6 +5,11 @@ import HtmlParsing from "../parsing/HtmlParsing";
 let popup = Popup.getInstance();
 
 chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    if (!tabs || !tabs[0]) {
+        document.getElementById('action')!.innerHTML = 'Error: Could not get current tab';
+        return;
+    }
+    
     chrome.storage.sync.get({
         darkMode: false,
         htmlParsing: false
@@ -29,7 +34,7 @@ chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
             }
             // Use message passing instead of direct background page access for Firefox private mode compatibility
             chrome.runtime.sendMessage({ action: "isDownloadFinished" }, function(response) {
-                if (!response.result) {
+                if (!response || !response.result) {
                     chrome.runtime.sendMessage({ action: "updateProgress" });
                     return;
                 }

@@ -68,9 +68,14 @@ export default class Popup
         if (match !== null) {
             await self.#doujinshiPreviewAsync(match[1]);
         } else if (self.url.startsWith("https://nhentai.net")) {
-            // @ts-ignore
-            chrome.tabs.executeScript(null, {
-                file: "js/getHtml.js" // Get the HTML of the page
+            // Get the active tab and execute script
+            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                if (tabs[0] && tabs[0].id) {
+                    chrome.scripting.executeScript({
+                        target: {tabId: tabs[0].id},
+                        files: ["js/getHtml.js"] // Get the HTML of the page
+                    });
+                }
             });
         } else {
             document.getElementById('action')!.innerHTML =  message.invalidPage();
@@ -224,9 +229,13 @@ export default class Popup
                         chrome.storage.local.set({
                             allIds: storageAllIds
                         });
-                        // @ts-ignore
-                        chrome.tabs.executeScript(null, {
-                            file: "js/updateContent.js" // Update the checkboxs of the page
+                        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                            if (tabs[0] && tabs[0].id) {
+                                chrome.scripting.executeScript({
+                                    target: {tabId: tabs[0].id},
+                                    files: ["js/updateContent.js"] // Update the checkboxs of the page
+                                });
+                            }
                         });
                     });
                 });
@@ -245,9 +254,13 @@ export default class Popup
                     chrome.storage.local.set({
                         allIds: []
                     });
-                    // @ts-ignore
-                    chrome.tabs.executeScript(null, {
-                        file: "js/updateContent.js" // Update the checkboxs of the page
+                    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                        if (tabs[0] && tabs[0].id) {
+                            chrome.scripting.executeScript({
+                                target: {tabId: tabs[0].id},
+                                files: ["js/updateContent.js"] // Update the checkboxs of the page
+                            });
+                        }
                     });
                 });
             }
@@ -356,10 +369,14 @@ export default class Popup
                             chrome.storage.local.set({
                                 allIds: self.#saveIdInLocalStorage(id, elemsLocal.allIds, checked)
                             });
-                        });
-                        // @ts-ignore
-                        chrome.tabs.executeScript(null, {
-                            file: "js/updateContent.js" // Update the checkboxs of the page
+                            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                                if (tabs[0] && tabs[0].id) {
+                                    chrome.scripting.executeScript({
+                                        target: {tabId: tabs[0].id},
+                                        files: ["js/updateContent.js"] // Update the checkboxs of the page
+                                    });
+                                }
+                            });
                         });
                     });
 
